@@ -3,29 +3,21 @@ from math import floor
 
 # pygame setup
 pygame.init()
-screen = pygame.display.set_mode((1280, 720))
+SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720
+RECT_WIDTH, RECT_HEIGHT = 30, 200
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Modeling Club")
+
 clock = pygame.time.Clock()
 running = True
 time = 0
-current_screen = 0
-white = (230, 230, 230)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 
-# title screen (screen value of 0)
-def title_screen():
-    screen.fill("black")
-    pygame.font.Font.render(pygame.font.SysFont("brushscript",20), "Hello", True, white)
+standard_font = pygame.font.SysFont("helvetica", 20)
+player1 = pygame.Rect(30,50,RECT_WIDTH,RECT_HEIGHT)
+player2 = pygame.Rect(SCREEN_WIDTH-RECT_WIDTH-30,50,RECT_WIDTH,RECT_HEIGHT)
 
-# game screen (screen value of 1)
-def game_screen():
-    screen.fill("purple")
-    pygame.font.Font.render(pygame.font.SysFont("brushscript",20), "There", True, white)
-
-# end screen (screen value of 2)
-def end_screen():
-    pygame.font.Font.render(pygame.font.SysFont("brushscript",20), "General", True, white)
-
-
-    
 
 while running:
     # poll for events
@@ -33,27 +25,17 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    clock.tick(60)  # limits FPS to 60
 
-    # fill the screen with a color to wipe away anything from last frame
-    '''
-    player1 = pygame.draw.rect(surface=)
-    pygame.Surface
-    player2 = 
-    
-    pygame.key.get_pressed(accel)
-    '''
-    time = time+1
-    if (event.type == pygame.KEYDOWN):
-        game_screen()
-    elif (event.type == pygame.KEYUP):
-        end_screen()
-    else:
-        title_screen()
-    # RENDER YOUR GAME HERE
+    screen.fill(BLACK)
+    there_text = pygame.font.Font.render(standard_font, "There", True, WHITE)
+    screen.blit(there_text, (SCREEN_WIDTH/2,SCREEN_HEIGHT/2))
 
-    # flip() the display to put your work on screen
-    pygame.display.flip()
+    pygame.draw.rect(screen, WHITE, player1)
+    pygame.draw.rect(screen, WHITE, player2)
+    pygame.display.update()
 
-    clock.tick(10)  # limits FPS to 60
+
+    # game logic here
 
 pygame.quit()
