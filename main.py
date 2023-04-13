@@ -16,20 +16,21 @@ running = True
 time = 0
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+INIT_BALL_SPEED = 8
 
 standard_font = pygame.font.SysFont("helvetica", 20)
 player1 = pygame.Rect(30,50,RECT_WIDTH,RECT_HEIGHT)
 player2 = pygame.Rect(SCREEN_WIDTH-RECT_WIDTH-30,50,RECT_WIDTH,RECT_HEIGHT)
 ball = pygame.Rect((SCREEN_WIDTH-BALL_RADIUS)/2, (SCREEN_HEIGHT-BALL_RADIUS)/2, BALL_RADIUS, BALL_RADIUS)
 
-player_speed = 4
-ball_speed = 8
-ball_speed_x = random.randint(1,8)
-ball_speed_y = floor(sqrt(ball_speed**2 - ball_speed_x**2)) + 1
+control = 1 if random.randint(0,1) == 0 else 2
+player_speed = 7
+ball_speed = INIT_BALL_SPEED
+ball_speed_x = random.randint(1,ball_speed) * (1 if control == 1 else -1)
+ball_speed_y = (sqrt(ball_speed**2 - ball_speed_x**2) + 1)
 
-
-ball_fuel = 1000
-friction = 10
+ball_fuel = 100
+friction = 0.1
 
 player1_score = 0
 player2_score = 0
@@ -56,7 +57,7 @@ while running:
     pygame.display.update()
 
 
-    # game logic here
+    # action for when keys are pressed
     keys_pressed = pygame.key.get_pressed()
     if keys_pressed[pygame.K_w]:
         player1.y -= player_speed
@@ -66,7 +67,16 @@ while running:
         player2.y -= player_speed
     if keys_pressed[pygame.K_DOWN]:
         player2.y += player_speed
+    if keys_pressed[pygame.K_SPACE]:
+        if ball_fuel > 0 and ball_speed < 10:
+            ball_fuel -= 1
+            ball_speed_x /= ball_speed
+            ball_speed_y /= ball_speed
+            ball_speed += 1
+            ball_speed_x *= ball_speed
+            ball_speed_y *= ball_speed
     
+    # game logic here
     if ball.y > SCREEN_HEIGHT - BALL_RADIUS:
         ball_speed_y *= -1
     elif ball.y < 0:
@@ -75,46 +85,63 @@ while running:
     ball.x += ball_speed_x
     ball.y += ball_speed_y
 
+    if ball_speed > INIT_BALL_SPEED:
+        ball_speed *= friction
+
     if player1.colliderect(ball):
-        
-        '''
         # calculate center of rectangle
         center_rect_x = player1.x + RECT_WIDTH/2
         center_rect_y = player1.y + RECT_HEIGHT/2
         
+        # calculate center of ball
         center_ball_x = ball.x + BALL_RADIUS
         center_ball_y = ball.y + BALL_RADIUS
 
+        # get the vector from the center of rectangle to the ball
+        # this encodes the angle the ball will be adjusted by
         vect_x = center_ball_x - center_rect_x
         vect_y = center_ball_y - center_rect_y
 
-        floor()
-        '''
+        # normalize these vectors
+        v_x = vect_x / sqrt(vect_x**2 + vect_y**2)
+        v_y = vect_y / sqrt(vect_x**2 + vect_y**2)
 
-
-        ball_speed_x *= -1
+        # now derive ball speed
+        ball_speed_x = ball_speed * v_x
+        ball_speed_y = ball_speed * v_y
     elif player2.colliderect(ball):
-        '''
         # calculate center of rectangle
-        center_rect_x = player2.x + RECT_WIDTH/2
-        center_rect_y = player2.y + RECT_HEIGHT/2
-
+        center_rect_x = player1.x + RECT_WIDTH/2
+        center_rect_y = player1.y + RECT_HEIGHT/2
+        
+        # calculate center of ball
         center_ball_x = ball.x + BALL_RADIUS
         center_ball_y = ball.y + BALL_RADIUS
-        
-        vect_x = center_ball_x - center_rect_x
-        vect_y = center_ball_y - center_rect_y
 
-        '''
-        ball_speed_x *= -1
+        # get the vector from the center of rectangle to the ball
+        # this encodes the angle the ball will be adjusted by
+        vect_x = center_rect_x - center_ball_x
+        vect_y = center_rect_y - center_ball_y
+
+        # normalize these vectors
+        v_x = vect_x / sqrt(vect_x**2 + vect_y**2)
+        v_y = vect_y / sqrt(vect_x**2 + vect_y**2)
+
+        # now derive ball speed
+        ball_speed_x = ball_speed * v_x
+        ball_speed_y = ball_speed * v_y
         
-    if ball.x + BALL_RADIUS< 0:
-        print("player 2 scores")
-        player2_score += player2_score
+    if ball.x + BALL_RADIUS < 0:
+        player2_score += 1
         ball.x, ball.y = (SCREEN_WIDTH-BALL_RADIUS)/2, (SCREEN_HEIGHT-BALL_RADIUS)/2
+        ball_speed = INIT_BALL_SPEED
+        ball_speed_x = random.randint(1,ball_speed) * (1 if control == 1 else -1)
+        ball_speed_y = (sqrt(ball_speed**2 - ball_speed_x**2) + 1)
     elif ball.x > SCREEN_WIDTH + BALL_RADIUS:
-        print("player 1 scores")
-        player1_score += player1_score
+        player1_score += 1
         ball.x, ball.y = (SCREEN_WIDTH-BALL_RADIUS)/2, (SCREEN_HEIGHT-BALL_RADIUS)/2
+        ball_speed = INIT_BALL_SPEED
+        ball_speed_x = random.randint(1,ball_speed) * (1 if control == 1 else -1)
+        ball_speed_y = (sqrt(ball_speed**2 - ball_speed_x**2) + 1)
 
 pygame.quit()
