@@ -16,32 +16,34 @@ def lotvolt(t, x, y):
     global beta
     if t > 150:
         beta = 0.4 + 9.9/(1 + np.exp(-(t-150-10)))
-    return alpha*x - beta*x*y, delta*x*y - gamma*y   
+    return np.array([alpha*x - beta*x*y, delta*x*y - gamma*y])   
 
 def lotvolt2(t, x):
     return lotvolt(t, x[0], x[1])
 
 def ode45(function, time_interval, starting_point):
+    t0 = time_interval[0]
+    t1 = time_interval[1]
     x_list = [starting_point[0]]
     y_list = [starting_point[1]]
 
-    # h = dt
+    h = dt
+    x_list = [starting_point]
 
-    for t in range(int((time_interval[1] - time_interval[0])/dt)):
+    for t in range(int((t1 - t0)/dt)):
         x_rec = x_list[-1]
-        y_rec = y_list[-1]
+        #y_rec = y_list[-1]
 
-        #k1 = function(x_rec, y_rec)
-        #k2 = function(x_rec + h*k1[0]/2, y_rec + h*k1[1]/2)
-        #k3 = function(x_rec + h*k2[0]/2, y_rec + h*k2[1]/2)
-        #k4 = function(x_rec + h*k3[0], y_rec + h*k3[1])
-        #x_list.append(x_rec + h*(k1[0] + 2*k2[0] + 2*k3[0] + k4[0]))
-        #y_list.append(x_rec + h*(k1[1] + 2*k2[1] + 2*k3[1] + k4[1]))
+        k1 = function(t0, x_rec)
+        k2 = function(t0 + t*h/2, x_rec + h*k1/2)
+        k3 = function(t0 + t*h/2, x_rec + h*k2/2)
+        k4 = function(t0 + t*h, x_rec + h*k3)
+        x_list.append(x_rec + h*(k1 + 2*k2 + 2*k3 + k4))
 
-        x_list.append(x_rec + function(t + time_interval[0], x_rec, y_rec)[0] * dt)
-        y_list.append(y_rec + function(t + time_interval[0], x_rec, y_rec)[1] * dt)
+        #x_list.append(x_rec + function(t + time_interval[0], x_rec, y_rec)[0] * dt)
+        #y_list.append(y_rec + function(t + time_interval[0], x_rec, y_rec)[1] * dt)
     
-    return x_list[:-1], y_list[:-1]
+    return x_list[:-1]#, y_list[:-1]
 
 def main():
     start_time = 100
@@ -51,6 +53,10 @@ def main():
     results = solve_ivp(lotvolt2, (start_time, end_time), np.array([50, 10]))
     t = results.t
     y = results.y
+
+    results = ode45(lotvolt2, (start_time, end_time), np.array([50, 10]))
+    t = np.array([t*dt + start_time for t in range(int((end_time - start_time)/dt))])
+    y = np.transpose(results)
     #plt.plot(time_interval, x)
     #plt.plot(time_interval, y)
     plt.plot(t, y[0])
