@@ -6,3 +6,5 @@ mb = 10
 mw = 100
 angvel = 0.3
 theta = 0
+
+def step_size():
