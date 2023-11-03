@@ -9,8 +9,8 @@ dt = 0.01
 x0 = 0
 y0 = 0
 z0 = 10
-v0 = 4*np.sqrt(2)/2
-phi = np.pi/4 # 45 degrees
+v0 = 50
+phi = np.pi/3 # 45 degrees
 theta = np.pi/6
 t = np.array([i*dt for i in range(int(tf/dt))])
 x = x0+v0*np.cos(phi)*np.cos(theta)*t
@@ -38,7 +38,7 @@ for i in range(len(new_x)):
     ax.plot(new_x[i], new_y[i], new_z[i], 'o')
     ax.plot([0, new_x[i]], [0, new_y[i]], [0, new_z[i]])
     plt.draw()
-    plt.pause(0.01)
+    plt.pause(0.05)
     ax.cla()
 
 np.random.seed(1)
@@ -48,15 +48,18 @@ x = [x0]
 y = [y0]
 z = [z0]
 vel = v0
-k = 0.1
+vx0 = vel*np.cos(phi)*np.cos(theta)
+vy0 = vel*np.cos(phi)*np.sin(theta)
+vz0 = vel*np.sin(phi)
+k = 1
 for ti in t[1:]:
-    #x.append(x[-1] + vel*np.cos(phi)*np.cos(theta)*dt - np.random.rand()/100)
-    #y.append(y[-1] + vel*np.cos(phi)*np.sin(theta)*dt - np.random.rand()/100)
-    #z.append(z[-1] + vel*np.sin(phi)*dt-0.5*g*(ti*dt) - np.random.rand()/100)
-    x.append(x[-1] + vel*np.cos(phi)*np.cos(theta)*dt - k*x[-1])
-    y.append(y[-1] + vel*np.cos(phi)*np.sin(theta)*dt - k*y[-1])
-    z.append(z[-1] + vel*np.sin(phi)*dt-0.5*g*(ti*dt))
-    vel = vel*(1-k)
+    vx = vx0*np.exp(-k*ti)
+    vy = vy0*np.exp(-k*ti)
+    vz = (vz0 + g/k)*np.exp(-k*ti) - g/k
+    
+    x.append(x[-1] + vx*dt)
+    y.append(y[-1] + vy*dt)
+    z.append(z[-1] + vz*dt)
     
     
 x = np.array(x)
